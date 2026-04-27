@@ -69,10 +69,13 @@ class CalendarCreate(Tool):
         else:
             parsed_end = compute_end_time(parsed_start, default_duration)
 
-        # Parse attendees
+        # Parse attendees (handle both string and list)
         attendee_list = None
         if attendees:
-            attendee_list = [a.strip() for a in attendees.split(",") if a.strip()]
+            if isinstance(attendees, str):
+                attendee_list = [a.strip() for a in attendees.split(",") if a.strip()]
+            else:
+                attendee_list = [a.strip() for a in attendees if a.strip()]
             if len(attendee_list) > max_attendees:
                 return Response(
                     message=f"Error: Too many attendees ({len(attendee_list)}). Maximum is {max_attendees}.",
