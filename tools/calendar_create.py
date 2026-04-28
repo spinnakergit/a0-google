@@ -82,11 +82,14 @@ class CalendarCreate(Tool):
                     break_loop=False,
                 )
 
-        # Parse recurrence
+        # Parse recurrence (handle both string and list)
         recurrence_list = None
         if recurrence:
-            # Split on newlines for multiple rules, NOT semicolons (used within RRULE syntax)
-            recurrence_list = [r.strip() for r in recurrence.split("\n") if r.strip()]
+            if isinstance(recurrence, str):
+                # Split on newlines for multiple rules, NOT semicolons (used within RRULE syntax)
+                recurrence_list = [r.strip() for r in recurrence.split("\n") if r.strip()]
+            else:
+                recurrence_list = [r.strip() for r in recurrence if r.strip()]
             # Ensure RRULE prefix
             recurrence_list = [
                 r if r.startswith("RRULE:") else f"RRULE:{r}" for r in recurrence_list
