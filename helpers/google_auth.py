@@ -8,10 +8,53 @@ and token.json with dynamically assembled scopes.
 import json
 import logging
 import os
+import subprocess
+import sys
+import threading
 from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger("google_auth")
+
+# ---------------------------------------------------------------------------
+# Dep self-heal — works around A0 having no plugin "startup" hook. If the
+# container restarts and /opt/venv-a0 lost our deps, the first auth call will
+# re-run initialize.py to reinstall them. Cached so it only runs once per
+# process; if it fails the subsequent `from google...` import surfaces the
+# real error.
+# ---------------------------------------------------------------------------
+_DEPS_CHECKED = False
+_DEPS_LOCK = threading.Lock()
+_REQUIRED_MODULES = ("google.auth", "google_auth_oauthlib", "googleapiclient")
+
+
+def _ensure_deps() -> None:
+    """If any required Google module is missing, re-run initialize.py once."""
+    global _DEPS_CHECKED
+    if _DEPS_CHECKED:
+        return
+    with _DEPS_LOCK:
+        if _DEPS_CHECKED:
+            return
+        try:
+            missing = []
+            for mod in _REQUIRED_MODULES:
+                try:
+                    __import__(mod)
+                except ImportError:
+                    missing.append(mod)
+            if missing:
+                init_script = Path(__file__).parent.parent / "initialize.py"
+                msg = f"[google-plugin] Missing deps {missing}; re-running {init_script}"
+                logger.warning(msg)
+                if init_script.exists():
+                    subprocess.run(
+                        [sys.executable, str(init_script)],
+                        check=False, timeout=180,
+                    )
+        finally:
+            # Only attempt the heal once per process even if it failed.
+            _DEPS_CHECKED = True
 
 # ---------------------------------------------------------------------------
 # Scope registry — maps service names to their required OAuth scopes
@@ -150,6 +193,7 @@ def get_credentials(config: dict):
 
     Returns a google.oauth2.credentials.Credentials object or raises GoogleAuthError.
     """
+    _ensure_deps()
     from google.oauth2.credentials import Credentials
     from google.auth.transport.requests import Request
 
@@ -210,6 +254,7 @@ def _pkce_path(config: dict) -> Path:
 
 def generate_auth_url(config: dict) -> str:
     """Generate the OAuth2 authorization URL for the user to visit."""
+    _ensure_deps()
     from google_auth_oauthlib.flow import Flow
 
     creds_file = _credentials_path(config)
@@ -247,6 +292,7 @@ def generate_auth_url(config: dict) -> str:
 
 def exchange_auth_code(config: dict, code: str):
     """Exchange an authorization code for credentials and save the token."""
+    _ensure_deps()
     from google_auth_oauthlib.flow import Flow
 
     creds_file = _credentials_path(config)
@@ -298,6 +344,7 @@ def is_authenticated(config: dict) -> tuple[bool, str]:
 
 def build_service(service_name: str, config: dict, creds=None):
     """Build a Google API service object for the given service."""
+    _ensure_deps()
     from googleapiclient.discovery import build
 
     if creds is None:
