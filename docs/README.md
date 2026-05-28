@@ -10,7 +10,7 @@ Unified Google integration for Agent Zero — Gmail, Calendar, Drive, Contacts, 
 - [Google Setup Guide](SETUP_GOOGLE.md) — Google Cloud Console project creation, API enablement, and OAuth configuration
 - [Development](DEVELOPMENT.md) — Architecture, code patterns, and contributing
 
-## Tools (21)
+## Tools (23)
 
 | Tool | Service | Description |
 |------|---------|-------------|
@@ -35,8 +35,10 @@ Unified Google integration for Agent Zero — Gmail, Calendar, Drive, Contacts, 
 | `contacts_create` | Contacts | Create new contacts with name, email, phone, organization |
 | `tasks_list` | Tasks | List task lists and tasks with filtering |
 | `tasks_manage` | Tasks | Create, update, complete, and delete tasks |
+| `sheets_manage` | Sheets | Create spreadsheets, get metadata, list recent spreadsheets (via Drive) |
+| `sheets_values` | Sheets | Read, write, and append cell values over A1-notation ranges |
 
-## Skills (6)
+## Skills (7)
 
 Semantic workflow guides that activate when user intent matches trigger phrases.
 
@@ -48,6 +50,7 @@ Semantic workflow guides that activate when user intent matches trigger phrases.
 | `google-drive` | Productivity | File search, upload, download, and sharing |
 | `google-daily-briefing` | Productivity | Cross-service morning briefing (inbox + calendar + tasks) |
 | `google-tasks` | Productivity | Task list management and to-do tracking |
+| `google-sheets` | Productivity | Spreadsheet creation and cell read/write/append |
 
 ## API Endpoints
 

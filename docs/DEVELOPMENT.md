@@ -18,7 +18,7 @@ a0-google/
 │   ├── tasks_client.py      # Tasks API wrapper (task lists, task CRUD)
 │   ├── sanitize.py          # Email content sanitization (tracking pixels, HTML-to-text, validation)
 │   └── date_utils.py        # Natural language date parsing with timezone awareness
-├── tools/                   # 21 tool implementations
+├── tools/                   # 23 tool implementations
 │   ├── gmail_read.py        # Read inbox, specific messages, list labels
 │   ├── gmail_send.py        # Compose and send emails with attachments
 │   ├── gmail_search.py      # Gmail query-based search with date/sender/label filters
@@ -39,8 +39,10 @@ a0-google/
 │   ├── contacts_search.py   # Search contacts by name/email
 │   ├── contacts_create.py   # Create contacts with full details
 │   ├── tasks_list.py        # List task lists and tasks
-│   └── tasks_manage.py      # Create, update, complete, delete tasks
-├── prompts/                 # 21 tool prompts + 1 group prompt
+│   ├── tasks_manage.py      # Create, update, complete, delete tasks
+│   ├── sheets_manage.py     # Create/get/list spreadsheets (list via Drive)
+│   └── sheets_values.py     # Read/write/append cell values (A1 notation)
+├── prompts/                 # 23 tool prompts + 1 group prompt
 │   ├── tool_group.md        # Group context for all Google tools
 │   └── agent.system.tool.<name>.md  # Per-tool prompt with JSON examples
 ├── skills/                  # 6 semantic workflow skills
@@ -98,7 +100,7 @@ a0-google/
 
 ### Tool Pattern
 
-All 21 tools follow this structure:
+All 23 tools follow this structure:
 ```python
 from helpers.tool import Tool, Response
 

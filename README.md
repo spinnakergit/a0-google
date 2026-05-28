@@ -1,6 +1,6 @@
 # Google Suite Plugin for Agent Zero
 
-Unified Google integration — Gmail, Calendar, Drive, Contacts, and Tasks with shared OAuth2 authentication.
+Unified Google integration — Gmail, Calendar, Drive, Contacts, Tasks, and Sheets with shared OAuth2 authentication.
 
 ## Features
 
@@ -9,6 +9,7 @@ Unified Google integration — Gmail, Calendar, Drive, Contacts, and Tasks with 
 - **Google Drive** — List, search, upload, download, and share files with link sharing
 - **Google Contacts** — List, search, and create contacts via the People API
 - **Google Tasks** — Manage task lists, create, complete, and delete to-do items
+- **Google Sheets** — Create spreadsheets, list them via Drive, read and write cell ranges, append rows
 - **Service toggles** — Enable or disable individual services without re-authentication
 - **Recipient allow-list** — Restrict email sending to approved addresses
 - **Content sanitization** — Tracking pixel removal, HTML-to-text, body truncation
@@ -25,6 +26,7 @@ Unified Google integration — Gmail, Calendar, Drive, Contacts, and Tasks with 
    - **Google Drive API**
    - **People API** (for Contacts)
    - **Tasks API**
+   - **Google Sheets API**
 4. Go to **APIs & Services > Credentials**
 5. Click **Create Credentials > OAuth 2.0 Client ID**
 6. Application type: **Desktop app**
@@ -58,10 +60,11 @@ Unified Google integration — Gmail, Calendar, Drive, Contacts, and Tasks with 
 | Drive | Google Drive API | `drive.file`, `drive.readonly` |
 | Contacts | People API | `contacts.readonly`, `contacts` |
 | Tasks | Tasks API | `tasks` |
+| Sheets | Google Sheets API | `spreadsheets` |
 
 Only scopes for **enabled** services are requested during the OAuth flow.
 
-## Tools (21)
+## Tools (23)
 
 | Tool | Service | Description |
 |------|---------|-------------|
@@ -86,6 +89,8 @@ Only scopes for **enabled** services are requested during the OAuth flow.
 | `contacts_create` | Contacts | Create new contacts with name, email, phone, organization |
 | `tasks_list` | Tasks | List task lists and tasks with filtering |
 | `tasks_manage` | Tasks | Create, update, complete, and delete tasks |
+| `sheets_manage` | Sheets | Create, get metadata for, or list spreadsheets |
+| `sheets_values` | Sheets | Read, write, or append cell ranges (A1 notation) |
 
 ## Configuration
 
@@ -100,6 +105,7 @@ Each Google service can be independently enabled or disabled in the plugin confi
 | Drive | Enabled | File management |
 | Contacts | Disabled | Enable in config to use |
 | Tasks | Disabled | Enable in config to use |
+| Sheets | Disabled | Enable in config to use. `list` requires Drive enabled too. |
 
 Disabling a service hides its tools from the agent. Re-enabling requires no re-authentication unless new OAuth scopes are needed.
 
@@ -123,7 +129,7 @@ Disabling a service hides its tools from the agent. Re-enabling requires no re-a
 
 **Important:** The agent uses relative time expressions (e.g., "tomorrow at 2pm") based on the configured timezone. Make sure your Google Calendar account timezone matches the plugin timezone setting.
 
-## Skills (6)
+## Skills (7)
 
 Skills are semantic workflow guides that teach the agent how to chain tools together for common tasks. They are loaded automatically when your request matches their trigger phrases.
 
@@ -135,6 +141,7 @@ Skills are semantic workflow guides that teach the agent how to chain tools toge
 | `google-drive` | "upload to drive", "find file", "share document" | File search, upload, download, and sharing |
 | `google-daily-briefing` | "morning briefing", "what's my day", "catch me up" | Cross-service overview (inbox + calendar + tasks) |
 | `google-tasks` | "show my tasks", "add a task", "complete task" | Task list management and to-do tracking |
+| `google-sheets` | "create spreadsheet", "read spreadsheet", "append to sheet" | Spreadsheet create/list/get + cell read/write/append |
 
 ## Architecture
 
@@ -150,10 +157,11 @@ a0-google/
 │   ├── drive_client.py      # Drive API wrapper
 │   ├── contacts_client.py   # People API wrapper
 │   ├── tasks_client.py      # Tasks API wrapper
+│   ├── sheets_client.py     # Sheets API wrapper
 │   ├── sanitize.py          # Email content sanitization
 │   └── date_utils.py        # Natural language date parsing
-├── tools/                   # 21 tool files
-├── skills/                  # 6 semantic workflow skills
+├── tools/                   # 23 tool files
+├── skills/                  # 7 semantic workflow skills
 ├── api/                     # Config and test API handlers
 ├── webui/                   # Dashboard and config UI
 ├── prompts/                 # Tool prompt definitions

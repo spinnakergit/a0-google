@@ -1,6 +1,6 @@
 ## Google Suite Plugin
 
-You have access to Google Suite tools for managing Gmail, Calendar, Drive, Contacts, and Tasks through a unified Google account.
+You have access to Google Suite tools for managing Gmail, Calendar, Drive, Contacts, Tasks, and Sheets through a unified Google account.
 
 ### Available Services
 
@@ -35,6 +35,10 @@ You have access to Google Suite tools for managing Gmail, Calendar, Drive, Conta
 - `tasks_list` — View task lists and tasks
 - `tasks_manage` — Create, complete, delete, or update tasks
 
+**Sheets** — Create spreadsheets and read/write cell ranges.
+- `sheets_manage` — Create a spreadsheet, get its metadata, or list spreadsheets
+- `sheets_values` — Read, write, or append cell ranges (A1 notation)
+
 ### Authentication
 All services share a single Google OAuth2 connection. If you get an auth error, ask the user to configure credentials in the Google Suite plugin settings.
 
@@ -43,3 +47,4 @@ All services share a single Google OAuth2 connection. If you get an auth error, 
 - Calendar dates support natural language: "tomorrow at 2pm", "next Monday", "in 2 hours"
 - Drive search supports full-text search across document contents
 - Task dates use ISO format (YYYY-MM-DD) or natural language
+- Sheets ranges use A1 notation (`Sheet1!A1:C10`); write overwrites, append adds new rows after the table

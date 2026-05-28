@@ -106,7 +106,7 @@ def uninstall(**kwargs):
 
     # Remove skills
     skills_dst = a0_root / "usr" / "skills"
-    for skill_name in ['google-communicate', 'google-daily-briefing', 'google-drive', 'google-research', 'google-schedule', 'google-tasks']:
+    for skill_name in ['google-communicate', 'google-daily-briefing', 'google-drive', 'google-research', 'google-schedule', 'google-tasks', 'google-sheets']:
         skill_path = skills_dst / skill_name
         if skill_path.is_dir():
             import shutil

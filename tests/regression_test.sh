@@ -396,12 +396,12 @@ else
     fail "T6.1 plugin.yaml parse" "$RESULT"
 fi
 
-# T6.2: tools directory has 21 .py files
+# T6.2: tools directory has 23 .py files
 TOOL_COUNT=$(docker exec "$CONTAINER" bash -c 'ls /a0/usr/plugins/google/tools/*.py 2>/dev/null | grep -v __pycache__ | wc -l')
-if [ "$TOOL_COUNT" -eq 21 ]; then
-    pass "T6.2 tools/ has 21 .py files ($TOOL_COUNT found)"
+if [ "$TOOL_COUNT" -eq 23 ]; then
+    pass "T6.2 tools/ has 23 .py files ($TOOL_COUNT found)"
 else
-    fail "T6.2 tools/ file count" "Expected 21, got $TOOL_COUNT"
+    fail "T6.2 tools/ file count" "Expected 23, got $TOOL_COUNT"
 fi
 
 # T6.3: No bare print() in tools
@@ -664,14 +664,14 @@ fi
 # ============================================================
 section "T11: Skills"
 
-EXPECTED_SKILLS="google-communicate google-daily-briefing google-drive google-research google-schedule google-tasks"
+EXPECTED_SKILLS="google-communicate google-daily-briefing google-drive google-research google-schedule google-tasks google-sheets"
 
-# T11.1: All 6 skill directories exist
+# T11.1: All 7 skill directories exist
 SKILL_COUNT=$(docker exec "$CONTAINER" bash -c 'ls -d /a0/usr/plugins/google/skills/google-*/ 2>/dev/null | wc -l')
-if [ "$SKILL_COUNT" -eq 6 ]; then
-    pass "T11.1 All 6 skill directories exist"
+if [ "$SKILL_COUNT" -eq 7 ]; then
+    pass "T11.1 All 7 skill directories exist"
 else
-    fail "T11.1 Skill directories" "Expected 6, found $SKILL_COUNT"
+    fail "T11.1 Skill directories" "Expected 7, found $SKILL_COUNT"
 fi
 
 # T11.2: Every skill has a SKILL.md file
@@ -721,7 +721,7 @@ fi
 BAD_TOOLS=$(docker exec "$CONTAINER" bash -c '
 REAL_TOOLS=$(ls /a0/usr/plugins/google/tools/*.py 2>/dev/null | while read f; do basename "$f" .py; done)
 BAD=""
-for skill in google-communicate google-daily-briefing google-drive google-research google-schedule google-tasks; do
+for skill in google-communicate google-daily-briefing google-drive google-research google-schedule google-tasks google-sheets; do
     FILE="/a0/usr/plugins/google/skills/$skill/SKILL.md"
     ALLOWED=$(sed -n "/^allowed_tools:/,/^[a-z]/p" "$FILE" 2>/dev/null | grep "  - " | sed "s/  - //" | tr -d "\"" | tr -d "\r")
     for tool in $ALLOWED; do

@@ -13,6 +13,8 @@ services:
     enabled: false
   tasks:
     enabled: false
+  sheets:
+    enabled: false
 
 # OAuth2 Authentication (shared across all services)
 auth:
@@ -43,6 +45,11 @@ contacts:
 # Tasks defaults
 tasks:
   default_list: "@default"
+
+# Sheets defaults
+sheets:
+  default_value_input: "USER_ENTERED"   # or "RAW"
+  max_list_results: 25
 
 # Memory integration
 memory:

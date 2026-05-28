@@ -8,11 +8,13 @@
         if (!config.services.drive) config.services.drive = {};
         if (!config.services.contacts) config.services.contacts = {};
         if (!config.services.tasks) config.services.tasks = {};
+        if (!config.services.sheets) config.services.sheets = {};
         if (config.services.gmail.enabled === undefined) config.services.gmail.enabled = true;
         if (config.services.calendar.enabled === undefined) config.services.calendar.enabled = true;
         if (config.services.drive.enabled === undefined) config.services.drive.enabled = true;
         if (config.services.contacts.enabled === undefined) config.services.contacts.enabled = false;
         if (config.services.tasks.enabled === undefined) config.services.tasks.enabled = false;
+        if (config.services.sheets.enabled === undefined) config.services.sheets.enabled = false;
         if (!config.gmail) config.gmail = {};
         if (!config.gmail.max_results) config.gmail.max_results = 20;
         if (config.gmail.include_spam_trash === undefined) config.gmail.include_spam_trash = false;
@@ -212,6 +214,16 @@
                         </div>
                         <div class="field-control">
                             <label class="toggle"><input type="checkbox" x-model="config.services.tasks.enabled"><span class="toggler"></span></label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">
+                            <div class="field-title" style="color: #188038;">Sheets</div>
+                            <div class="field-description">Spreadsheets: create, read/write cells, append rows. Listing spreadsheets requires Drive to also be enabled.</div>
+                        </div>
+                        <div class="field-control">
+                            <label class="toggle"><input type="checkbox" x-model="config.services.sheets.enabled"><span class="toggler"></span></label>
                         </div>
                     </div>
                 </div>

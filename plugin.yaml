@@ -1,6 +1,6 @@
 name: google
 title: Google Suite
-description: Unified Google integration — Gmail, Calendar, Drive, Contacts, and Tasks with shared OAuth2 authentication.
+description: Unified Google integration — Gmail, Calendar, Drive, Contacts, Tasks, and Sheets with shared OAuth2 authentication.
 version: 1.1.0
 settings_sections:
   - external
