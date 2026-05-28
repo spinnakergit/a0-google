@@ -444,7 +444,7 @@ all_ok = True
 for f in tool_files:
     name = os.path.splitext(os.path.basename(f))[0]
     try:
-        mod = importlib.import_module(f'plugins.google.tools.{name}')
+        mod = importlib.import_module(f'usr.plugins.google.tools.{name}')
         has_tool = any(
             isinstance(getattr(mod, attr), type) and
             hasattr(getattr(mod, attr), 'execute')
@@ -492,12 +492,12 @@ else
     fail "T7.3 main.html data-gg attributes" "Expected >= 3, got $DATA_ATTRS"
 fi
 
-# T7.4: config.html uses data-gg= attributes
-DATA_ATTRS=$(docker exec "$CONTAINER" grep -c 'data-gg=' /a0/usr/plugins/google/webui/config.html 2>/dev/null)
-if [ "$DATA_ATTRS" -ge 3 ]; then
-    pass "T7.4 config.html uses data-gg= attributes ($DATA_ATTRS found)"
+# T7.4: config.html uses Alpine x-model bindings (migrated from data-gg attributes)
+XMODEL_ATTRS=$(docker exec "$CONTAINER" grep -c 'x-model' /a0/usr/plugins/google/webui/config.html 2>/dev/null)
+if [ "$XMODEL_ATTRS" -ge 3 ]; then
+    pass "T7.4 config.html uses Alpine x-model bindings ($XMODEL_ATTRS found)"
 else
-    fail "T7.4 config.html data-gg attributes" "Expected >= 3, got $DATA_ATTRS"
+    fail "T7.4 config.html x-model bindings" "Expected >= 3, got $XMODEL_ATTRS"
 fi
 
 # ============================================================
@@ -625,8 +625,8 @@ RESULT=$(pyexec "
 import warnings; warnings.filterwarnings('ignore')
 import importlib
 apis = [
-    'plugins.google.api.google_config_api',
-    'plugins.google.api.google_test',
+    'usr.plugins.google.api.google_config_api',
+    'usr.plugins.google.api.google_test',
 ]
 all_csrf = True
 for api_mod in apis:
