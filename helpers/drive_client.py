@@ -6,6 +6,7 @@ Auth is delegated to google_auth.
 
 import io
 import os
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -13,23 +14,34 @@ from usr.plugins.google.helpers.google_auth import (
     get_google_config, build_service, GoogleAuthError,
 )
 
+logger = logging.getLogger("google.drive_client")
+
 
 class DriveClient:
     """Google Drive API wrapper."""
+
+    # Diagnostic message from the most recent from_config() failure. Read by tools
+    # to surface the real reason (instead of a generic "not authenticated").
+    last_error: str = ""
 
     def __init__(self, service):
         self._service = service
 
     @classmethod
     def from_config(cls, agent=None) -> Optional["DriveClient"]:
-        """Build a DriveClient from plugin config. Returns None if not authenticated."""
+        """Build a DriveClient from plugin config. Returns None if unavailable."""
         config = get_google_config(agent)
         try:
             service = build_service("drive", config)
+            cls.last_error = ""
             return cls(service=service)
-        except GoogleAuthError:
+        except GoogleAuthError as e:
+            cls.last_error = f"Auth: {e}"
+            logger.warning("[google-plugin] DriveClient auth failed: %s", e)
             return None
-        except Exception:
+        except Exception as e:
+            cls.last_error = f"{type(e).__name__}: {e}"
+            logger.warning("[google-plugin] DriveClient build failed: %s: %s", type(e).__name__, e)
             return None
 
     def list_files(

@@ -71,7 +71,7 @@ class CalendarUpdate(Tool):
         client = CalendarClient.from_config(agent=self.agent)
         if not client:
             return Response(
-                message="Error: Google Calendar not authenticated. Please configure OAuth credentials in plugin settings.",
+                message=f"Error: Google Calendar unavailable. {CalendarClient.last_error or 'Unknown error.'}",
                 break_loop=False,
             )
 

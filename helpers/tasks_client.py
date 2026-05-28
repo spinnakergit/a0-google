@@ -4,29 +4,39 @@ Handles task listing, creation, completion, and deletion.
 Auth is delegated to google_auth.
 """
 
+import logging
 from typing import Optional
 
 from usr.plugins.google.helpers.google_auth import (
     get_google_config, build_service, GoogleAuthError,
 )
 
+logger = logging.getLogger("google.tasks_client")
+
 
 class TasksClient:
     """Google Tasks API wrapper."""
+
+    last_error: str = ""
 
     def __init__(self, service):
         self._service = service
 
     @classmethod
     def from_config(cls, agent=None) -> Optional["TasksClient"]:
-        """Build a TasksClient from plugin config. Returns None if not authenticated."""
+        """Build a TasksClient from plugin config. Returns None if unavailable."""
         config = get_google_config(agent)
         try:
             service = build_service("tasks", config)
+            cls.last_error = ""
             return cls(service=service)
-        except GoogleAuthError:
+        except GoogleAuthError as e:
+            cls.last_error = f"Auth: {e}"
+            logger.warning("[google-plugin] TasksClient auth failed: %s", e)
             return None
-        except Exception:
+        except Exception as e:
+            cls.last_error = f"{type(e).__name__}: {e}"
+            logger.warning("[google-plugin] TasksClient build failed: %s: %s", type(e).__name__, e)
             return None
 
     def list_task_lists(self, max_results: int = 20) -> list:

@@ -163,8 +163,10 @@ def _data_dir(config: dict) -> Path:
     ]
     for p in candidates:
         if p.exists():
+            logger.debug("Using data dir: %s", p)
             return p
     # Create the first candidate
+    logger.info("No existing data dir found, creating: %s", candidates[0])
     candidates[0].mkdir(parents=True, exist_ok=True)
     os.chmod(str(candidates[0]), 0o700)
     return candidates[0]
@@ -199,26 +201,57 @@ def get_credentials(config: dict):
 
     token_file = _token_path(config)
     scopes = get_scopes(config)
+    logger.info("Loading credentials from %s (requesting %d scopes)", token_file, len(scopes))
 
     creds = None
-    if token_file.exists():
-        try:
-            creds = Credentials.from_authorized_user_file(str(token_file), scopes)
-        except Exception:
-            creds = None
+    if not token_file.exists():
+        raise GoogleAuthError(
+            f"token.json not found at {token_file}. "
+            "Place a google-auth-format token file there, or complete OAuth via plugin settings."
+        )
 
-    if creds and creds.expired and creds.refresh_token:
+    try:
+        creds = Credentials.from_authorized_user_file(str(token_file), scopes)
+    except Exception as e:
+        raise GoogleAuthError(
+            f"Failed to load {token_file}: {type(e).__name__}: {e}. "
+            "Expected google-auth format with keys: token, refresh_token, token_uri, "
+            "client_id, client_secret, scopes."
+        )
+
+    # Scope mismatch: token covers fewer scopes than the plugin is asking for.
+    token_scopes = set(creds.scopes or [])
+    missing = [s for s in scopes if s not in token_scopes]
+    if missing:
+        logger.warning(
+            "Token scopes %s do not cover requested scopes; missing: %s",
+            sorted(token_scopes), missing,
+        )
+
+    if creds.expired and creds.refresh_token:
+        logger.info("Token expired (expiry=%s); refreshing", getattr(creds, "expiry", None))
         try:
             creds.refresh(Request())
             _save_token(creds, config)
+            logger.info("Token refresh succeeded")
         except Exception as e:
             raise GoogleAuthError(
-                f"Token refresh failed: {e}. Re-authorize via plugin settings."
+                f"Token refresh failed: {type(e).__name__}: {e}. "
+                "The refresh_token may be revoked/expired, or client_id/client_secret "
+                "in token.json may not match the OAuth client that issued the token."
             )
 
-    if not creds or not creds.valid:
+    if not creds.valid:
+        reason = []
+        if creds.expired:
+            reason.append("expired")
+        if not creds.refresh_token:
+            reason.append("no refresh_token")
+        if missing:
+            reason.append(f"missing scopes: {missing}")
         raise GoogleAuthError(
-            "Not authenticated. Complete OAuth flow via plugin settings."
+            f"Credentials loaded but not valid ({', '.join(reason) or 'unknown'}). "
+            "Re-authorize or provide a token with full required scopes."
         )
 
     return creds
@@ -329,13 +362,25 @@ def is_authenticated(config: dict) -> tuple[bool, str]:
     """Check if valid credentials exist. Returns (authenticated, email_or_error)."""
     try:
         creds = get_credentials(config)
-        service = build_service("gmail", config, creds=creds)
-        profile = service.users().getProfile(userId="me").execute()
-        return True, profile.get("emailAddress", "unknown")
+        # Probe via whichever enabled service supports a cheap identity call.
+        enabled = get_enabled_services(config)
+        probe = "gmail" if "gmail" in enabled else next(iter(enabled), None)
+        if probe == "gmail":
+            service = build_service("gmail", config, creds=creds)
+            profile = service.users().getProfile(userId="me").execute()
+            return True, profile.get("emailAddress", "unknown")
+        if probe == "calendar":
+            service = build_service("calendar", config, creds=creds)
+            cal = service.calendars().get(calendarId="primary").execute()
+            return True, cal.get("id", "unknown")
+        # Fallback: creds load + refresh succeeded, but no cheap identity probe available.
+        return True, "authenticated (no identity probe for enabled services)"
     except GoogleAuthError as e:
+        logger.warning("Authentication check failed: %s", e)
         return False, str(e)
     except Exception as e:
-        return False, f"Error: {e}"
+        logger.exception("Unexpected error during auth check")
+        return False, f"{type(e).__name__}: {e}"
 
 
 # ---------------------------------------------------------------------------

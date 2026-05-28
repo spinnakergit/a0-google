@@ -28,8 +28,7 @@ class DriveList(Tool):
         client = DriveClient.from_config(agent=self.agent)
         if not client:
             return Response(
-                message="Error: Google Drive not authenticated. "
-                        "Please configure OAuth credentials in the Google plugin settings.",
+                message=f"Error: Google Drive unavailable. {DriveClient.last_error or 'Unknown error.'}",
                 break_loop=False,
             )
 
